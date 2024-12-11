@@ -30,6 +30,10 @@ export function calculateNetIdsVariable(totalBits: number, subnets: number[]) {
     if (hosts[i] > totalBits) {
       throw new Error("Dati non validi");
     }
+
+    if (totalBits - hosts[i] <= 0) {
+      throw new Error("Dati non validi");
+    }
   }
 
   const netIds = [];
@@ -42,10 +46,14 @@ export function calculateNetIdsVariable(totalBits: number, subnets: number[]) {
   // Creazione del netId per le altre sotto reti
   for (let i = 1; i < subnets.length; i++) {
     const length = netId.length;
-    
+
     netId = (parseInt(netId, 2) + 1).toString(2);
     netId = netId.padStart(length, "0");
     netId = netId.padEnd(totalBits - hosts[i], "0");
+
+    if (netId.length > length) {
+      throw new Error("Dati non validi");
+    }
 
     netIds.push(netId);
   }
@@ -137,6 +145,20 @@ export function calculateCidr(ipClass: string, numBits: number) {
       return 16 + numBits;
     case "C":
       return 24 + numBits;
+    default:
+      return -1;
+  }
+}
+
+export function calculateMaxSubnets(ipClass: string) {
+  // Calcolo il numero massimo di sotto reti in base alla classe dell'indirizzo IP
+  switch (ipClass) {
+    case "A":
+      return 4194304;
+    case "B":
+      return 16384;
+    case "C":
+      return 128;
     default:
       return -1;
   }
