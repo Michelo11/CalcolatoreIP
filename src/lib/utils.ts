@@ -28,11 +28,11 @@ export function calculateNetIdsVariable(totalBits: number, subnets: number[]) {
   // Controllo che i bit per le sotto reti non siano troppi per la maschera di sottorete
   for (let i = 0; i < hosts.length; i++) {
     if (hosts[i] > totalBits) {
-      throw new Error("Dati non validi");
+      throw new Error("Numero di bit troppo elevato");
     }
 
     if (totalBits - hosts[i] <= 0) {
-      throw new Error("Dati non validi");
+      throw new Error("Numero di bit non sufficiente");
     }
   }
 
@@ -52,7 +52,7 @@ export function calculateNetIdsVariable(totalBits: number, subnets: number[]) {
     netId = netId.padEnd(totalBits - hosts[i], "0");
 
     if (netId.length > length) {
-      throw new Error("Dati non validi");
+      throw new Error("Numero di bit non sufficiente");
     }
 
     netIds.push(netId);

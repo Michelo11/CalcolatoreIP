@@ -85,8 +85,10 @@ export function Choice2() {
 
         {result != null && (
           <>
-            {!ip1 || !ip2 || !subnetMask1 || !subnetMask2 || !isValid ? (
-              <p>Dati non validi</p>
+            {!ip1 || !ip2 || !subnetMask1 || !subnetMask2 ? (
+              <p>Dati mancanti</p>
+            ) : !isValid ? (
+              <p>Indirizzi IP o Subnet Mask non validi</p>
             ) : (
               <p>
                 {result

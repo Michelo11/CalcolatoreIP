@@ -44,7 +44,7 @@ export function Choice1() {
       {confirm && (
         <>
           {!ip || !isValid ? (
-            <p>Dati non validi</p>
+            <p>Dati non validi perché l'IP è vuoto o non è valido.</p>
           ) : (
             <>
               <p>Classe: {findClass(ip)}</p>
