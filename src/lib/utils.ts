@@ -49,11 +49,12 @@ export function calculateNetIdsVariable(totalBits: number, subnets: number[]) {
 
     netId = (parseInt(netId, 2) + 1).toString(2);
     netId = netId.padStart(length, "0");
-    netId = netId.padEnd(totalBits - hosts[i], "0");
 
     if (netId.length > length) {
       throw new Error("Numero di bit non sufficiente");
     }
+
+    netId = netId.padEnd(totalBits - hosts[i], "0");
 
     netIds.push(netId);
   }

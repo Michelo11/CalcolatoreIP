@@ -12,6 +12,7 @@ import {
   downloadFile,
 } from "../../lib/utils";
 import { Ip } from "../../types";
+import { table } from "@zkochan/table";
 
 export function Choice3() {
   const [ip, setIp] = useState("");
@@ -23,6 +24,8 @@ export function Choice3() {
   const [error, setError] = useState("");
 
   const handleSubmit = () => {
+    setError("");
+
     try {
       const ipClass = findClass(ip);
 
@@ -61,61 +64,68 @@ export function Choice3() {
       }
 
       setResult(result);
-      setContent(
-        result &&
-          `IP: ${ip}\nNumero di sottoreti: ${numSubnets}\nSubnet Mask binario: ${convertToDecOctets(
-            result[0].subnetMask
-          ).join(".")}\nSubnet Mask decimale: ${convertToBinOctets(
-            convertToDecOctets(result[0].subnetMask).join(".")
-          ).join(".")}\nNotazione CIDR: /${calculateCidr(
-            findClass(ip),
-            Math.ceil(Math.log2(parseInt(numSubnets, 10)))
-          ).toString()}\nRisultati in decimale:\n${result
-            ?.map(
-              (subIp, index) =>
-                `Sottorete ${index + 1}:\nNet ID: ${getIpBase(
-                  ip
-                )}.${convertToDecOctets(subIp.netId).join(
-                  "."
-                )}\nPrimo Host: ${getIpBase(ip)}.${convertToDecOctets(
-                  subIp.firstHost
-                ).join(".")}\nUltimo Host: ${getIpBase(
-                  ip
-                )}.${convertToDecOctets(subIp.lastHost).join(
-                  "."
-                )}\nGateway: ${getIpBase(ip)}.${convertToDecOctets(
-                  subIp.gateway
-                ).join(".")}\nBroadcast: ${getIpBase(ip)}.${convertToDecOctets(
-                  subIp.broadcast
-                ).join(".")}`
-            )
-            .join("\n")}\nRisultati in binario:\n${result
-            ?.map(
-              (subIp, index) =>
-                `Sottorete ${index + 1}:\nNet ID: ${convertToBinOctets(
-                  getIpBase(ip) +
-                    "." +
-                    convertToDecOctets(subIp.netId).join(".")
-                ).join(".")}\nPrimo Host: ${convertToBinOctets(
-                  getIpBase(ip) +
-                    "." +
-                    convertToDecOctets(subIp.firstHost).join(".")
-                ).join(".")}\nUltimo Host: ${convertToBinOctets(
-                  getIpBase(ip) +
-                    "." +
-                    convertToDecOctets(subIp.lastHost).join(".")
-                ).join(".")}\nGateway: ${convertToBinOctets(
-                  getIpBase(ip) +
-                    "." +
-                    convertToDecOctets(subIp.gateway).join(".")
-                ).join(".")}\nBroadcast: ${convertToBinOctets(
-                  getIpBase(ip) +
-                    "." +
-                    convertToDecOctets(subIp.broadcast).join(".")
-                ).join(".")}`
-            )
-            .join("\n")}`
+
+      const tableDec = table(
+        [
+          ["#", "Net ID", "Primo Host", "Ultimo Host", "Gateway", "Broadcast"],
+          ...result.map((subIp, index) => [
+            index + 1,
+            getIpBase(ip) + "." + convertToDecOctets(subIp.netId).join("."),
+            getIpBase(ip) + "." + convertToDecOctets(subIp.firstHost).join("."),
+            getIpBase(ip) + "." + convertToDecOctets(subIp.lastHost).join("."),
+            getIpBase(ip) + "." + convertToDecOctets(subIp.gateway).join("."),
+            getIpBase(ip) + "." + convertToDecOctets(subIp.broadcast).join("."),
+          ]),
+        ],
+        {
+          header: {
+            content: "Decimale",
+          },
+        }
       );
+
+      const tableBin = table(
+        [
+          ["#", "Net ID", "Primo Host", "Ultimo Host", "Gateway", "Broadcast"],
+          ...result.map((subIp, index) => [
+            index + 1,
+            convertToBinOctets(
+              getIpBase(ip) + "." + convertToDecOctets(subIp.netId).join(".")
+            ).join("."),
+            convertToBinOctets(
+              getIpBase(ip) +
+                "." +
+                convertToDecOctets(subIp.firstHost).join(".")
+            ).join("."),
+            convertToBinOctets(
+              getIpBase(ip) + "." + convertToDecOctets(subIp.lastHost).join(".")
+            ).join("."),
+            convertToBinOctets(
+              getIpBase(ip) + "." + convertToDecOctets(subIp.gateway).join(".")
+            ).join("."),
+            convertToBinOctets(
+              getIpBase(ip) +
+                "." +
+                convertToDecOctets(subIp.broadcast).join(".")
+            ).join("."),
+          ]),
+        ],
+        {
+          header: {
+            content: "Binario",
+          },
+        }
+      );
+
+      if (result)
+        setContent(
+          `IP: ${ip}\nNumero di sottoreti: ${numSubnets}` +
+            "\n\n" +
+            tableDec.toString() +
+            "\n" +
+            tableBin.toString()
+        );
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if ("message" in error) setError(error.message);
@@ -155,7 +165,7 @@ export function Choice3() {
         <button onClick={() => handleSubmit()}>Conferma</button>
         <button
           onClick={() => downloadFile(content!, "choice3.txt")}
-          disabled={!result || !isValid || !content}
+          disabled={!result || !isValid || !content || !!error}
           className={
             result && isValid && content
               ? ""

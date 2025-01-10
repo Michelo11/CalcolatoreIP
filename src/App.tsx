@@ -10,7 +10,7 @@ export default function App() {
 
   return (
     <main className="min-h-screen bg-background font-sans text-white p-3 flex flex-col gap-3">
-      <h1>Calcolatore IP</h1>
+      <h1>Subnetting</h1>
 
       <Menu choice={choice} setChoice={setChoice} />
 

@@ -14,6 +14,7 @@ import {
   getIpBase,
   validateInput,
 } from "../../lib/utils";
+import { table } from "@zkochan/table";
 
 export function Choice4() {
   const [ip, setIp] = useState("");
@@ -46,6 +47,7 @@ export function Choice4() {
   };
 
   const handleSubmit = () => {
+    setError("");
     if (!isValid) return setResult([]);
 
     const ipClass = findClass(ip);
@@ -92,62 +94,97 @@ export function Choice4() {
     }
 
     setResult(result);
-    setContent(
-      result &&
-        `IP: ${ip}\nNumero di sottoreti: ${numSubnets}\nRisultati in decimale:\n${result
-          ?.map(
-            (subIp, index) =>
-              `Sottorete ${index + 1}:\nNet ID: ${getIpBase(
-                ip
-              )}.${convertToDecOctets(subIp.netId).join(
-                "."
-              )}\nPrimo Host: ${getIpBase(ip)}.${convertToDecOctets(
-                subIp.firstHost
-              ).join(".")}\nUltimo Host: ${getIpBase(ip)}.${convertToDecOctets(
-                subIp.lastHost
-              ).join(".")}\nGateway: ${getIpBase(ip)}.${convertToDecOctets(
-                subIp.gateway
-              ).join(".")}\nBroadcast: ${getIpBase(ip)}.${convertToDecOctets(
-                subIp.broadcast
-              ).join(".")}\nSubnet Mask: ${convertToDecOctets(
-                subIp.subnetMask
-              ).join(".")}\nNotazione CIDR: /${calculateCidr(
-                findClass(ip),
-                calculateClassBits(findClass(ip)) -
-                  calculateVariableBits(numHosts)[index]
-              ).toString()}`
-          )
-          .join("\n")}\nRisultati in binario:\n${result
-          ?.map(
-            (subIp, index) =>
-              `Sottorete ${index + 1}:\nNet ID: ${convertToBinOctets(
-                getIpBase(ip) + "." + convertToDecOctets(subIp.netId).join(".")
-              ).join(".")}\nPrimo Host: ${convertToBinOctets(
-                getIpBase(ip) +
-                  "." +
-                  convertToDecOctets(subIp.firstHost).join(".")
-              ).join(".")}\nUltimo Host: ${convertToBinOctets(
-                getIpBase(ip) +
-                  "." +
-                  convertToDecOctets(subIp.lastHost).join(".")
-              ).join(".")}\nGateway: ${convertToBinOctets(
-                getIpBase(ip) +
-                  "." +
-                  convertToDecOctets(subIp.gateway).join(".")
-              ).join(".")}\nBroadcast: ${convertToBinOctets(
-                getIpBase(ip) +
-                  "." +
-                  convertToDecOctets(subIp.broadcast).join(".")
-              ).join(".")}\nSubnet Mask: ${convertToBinOctets(
-                convertToDecOctets(subIp.subnetMask).join(".")
-              ).join(".")}\nNotazione CIDR: /${calculateCidr(
-                findClass(ip),
-                calculateClassBits(findClass(ip)) -
-                  calculateVariableBits(numHosts)[index]
-              ).toString()}`
-          )
-          .join("\n")}`
+
+    const tableDec = table(
+      [
+        [
+          "#",
+          "Net ID",
+          "Primo Host",
+          "Ultimo Host",
+          "Gateway",
+          "Broadcast",
+          "Subnet Mask",
+          "Notazione CIDR",
+        ],
+        ...result.map((subIp, index) => [
+          index + 1,
+          getIpBase(ip) + "." + convertToDecOctets(subIp.netId).join("."),
+          getIpBase(ip) + "." + convertToDecOctets(subIp.firstHost).join("."),
+          getIpBase(ip) + "." + convertToDecOctets(subIp.lastHost).join("."),
+          getIpBase(ip) + "." + convertToDecOctets(subIp.gateway).join("."),
+          getIpBase(ip) + "." + convertToDecOctets(subIp.broadcast).join("."),
+          convertToDecOctets(subIp.subnetMask).join("."),
+          "/" +
+            calculateCidr(
+              findClass(ip),
+              calculateClassBits(findClass(ip)) -
+                calculateVariableBits(numHosts)[index]
+            ),
+        ]),
+      ],
+      {
+        header: {
+          content: "Decimale",
+        },
+      }
     );
+
+    const tableBin = table(
+      [
+        [
+          "#",
+          "Net ID",
+          "Primo Host",
+          "Ultimo Host",
+          "Gateway",
+          "Broadcast",
+          "Subnet Mask",
+          "Notazione CIDR",
+        ],
+        ...result.map((subIp, index) => [
+          index + 1,
+          convertToBinOctets(
+            getIpBase(ip) + "." + convertToDecOctets(subIp.netId).join(".")
+          ).join("."),
+          convertToBinOctets(
+            getIpBase(ip) + "." + convertToDecOctets(subIp.firstHost).join(".")
+          ).join("."),
+          convertToBinOctets(
+            getIpBase(ip) + "." + convertToDecOctets(subIp.lastHost).join(".")
+          ).join("."),
+          convertToBinOctets(
+            getIpBase(ip) + "." + convertToDecOctets(subIp.gateway).join(".")
+          ).join("."),
+          convertToBinOctets(
+            getIpBase(ip) + "." + convertToDecOctets(subIp.broadcast).join(".")
+          ).join("."),
+          convertToBinOctets(
+            convertToDecOctets(subIp.subnetMask).join(".")
+          ).join("."),
+          "/" +
+            calculateCidr(
+              findClass(ip),
+              calculateClassBits(findClass(ip)) -
+                calculateVariableBits(numHosts)[index]
+            ),
+        ]),
+      ],
+      {
+        header: {
+          content: "Binario",
+        },
+      }
+    );
+
+    if (result)
+      setContent(
+        `IP: ${ip}\nNumero di sottoreti: ${numSubnets}` +
+          "\n\n" +
+          tableDec.toString() +
+          "\n" +
+          tableBin.toString()
+      );
   };
 
   return (
